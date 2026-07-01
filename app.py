@@ -18,6 +18,9 @@ class Features(BaseModel):
     Latitude: float = Field(default=37.88)
     Longitude: float = Field(default=-122.23)
 
+def to_row(f: Features) -> list:
+    return [f.MedInc, f.HouseAge, f.AveRooms, f.AveBedrms, f.Population, f.AveOccup, f.Latitude, f.Longitude]
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -36,3 +39,9 @@ def predict(features: Features = Body(default_factory=Features)):
     ]]
     prediction = modele.predict(X)[0]
     return {"valeur prédite": round(float(prediction), 2)}
+
+@app.post("/predict_batch")
+def predict_batch(features: list[Features]):
+    X = [to_row(f) for f in features]
+    predictions = modele.predict(X)
+    return {"predicted_house_values": [round(float(p), 2) for p in predictions]}
